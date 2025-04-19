@@ -38,7 +38,7 @@ def get_df(csv_file):
 
     df = df.drop(cols_to_remove, axis=1)
 
-    df = df.dropna(subset=["ConvertedCompYearly", "YearsCodePro"])
+    df = df.dropna(subset=["ConvertedCompYearly", "YearsCodePro", "Country"])
 
     df['YearsCodePro'] = df['YearsCodePro'].replace({
         'More than 50 years': 50,
@@ -56,7 +56,7 @@ def get_df(csv_file):
 
     df = df.drop(['MainBranch', 'Employment'], axis=1)
     
-    df.columns = sorted([rename_col(col) for col in df.columns])
+    df.columns = [rename_col(col) for col in df.columns]
 
     return df
 
@@ -66,12 +66,25 @@ def rename_col(col):
 
     return col.removesuffix("HaveWorkedWith")
 
-df_21 = get_df('/Users/byar/Downloads/stack-overflow-developer-survey-2021/survey_results_public.csv')
-print(df_21.columns.to_list())
-df_22 = get_df('/Users/byar/Downloads/stack-overflow-developer-survey-2022/survey_results_public.csv')
-print(df_22.columns.to_list())
-df_23 = get_df('/Users/byar/Downloads/stack-overflow-developer-survey-2023/survey_results_public.csv')
-print(df_23.columns.to_list())
-df_24 = get_df('/Users/byar/Downloads/stack-overflow-developer-survey-2024/survey_results_public.csv')
-print(df_24.columns.to_list())
+dfs = []
+for year in [2024]:#,2022,2023,2024]:
+    df = get_df(f'/Users/byar/Downloads/stack-overflow-developer-survey-{year}/survey_results_public.csv')
+    df['Year'] = year
+    # print(df.columns.to_list())
+    # print(len(df))
+    dfs.append(df)
 
+pd.options.display.max_rows = None
+
+df = pd.concat(dfs, ignore_index=True)
+
+countries = sorted(df['Country'].unique())
+
+country_dict = {
+    country: index 
+    for index, country
+    in enumerate(countries)
+    }
+
+df['Country'] = df['Country'].apply(lambda x: country_dict[x])
+df['Country'] = pd.to_numeric(df['Country'], errors='raise')
