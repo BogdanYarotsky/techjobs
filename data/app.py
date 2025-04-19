@@ -13,20 +13,31 @@ bad_cols_set = {
     'TrueFalse_1', 'TrueFalse_2', 'TrueFalse_3', 'OpSysPersonal use',
     'CodingActivities', 'LearnCodeOnline', 'LearnCodeCoursesCert',
     'PurchaseInfluence', 'BuyNewTool', 'VersionControlSystem', 
-    'VCInteraction', 'VCHostingPersonal use', 'VCHostingProfessional use'
+    'VCInteraction', 'VCHostingPersonal use', 'VCHostingProfessional use',
+    'OfficeStackAsyncHaveWorkedWith', 'OfficeStackSyncHaveWorkedWith',
+    'AIAcc', 'AIBen', 'AIDevHaveWorkedWith', 'AINextNeither different nor similar', 
+    'AINextSomewhat different', 'AINextSomewhat similar', 
+    'AINextVery different', 'AINextVery similar', 'AISearchHaveWorkedWith', 
+    'AISelect', 'AISent', 'AIToolCurrently Using', 'AIToolInterested in Using', 
+    'AIToolNot interested in Using', 'Industry', 'Knowledge_8', 'Q120', 'SOAI', 'TechList', 'RemoteWork',
+    'AIChallenges', 'AIComplex', 'AIEthics', 'AINextLess integrated', 'AINextMore integrated', 'AINextMuch less integrated', 
+    'AINextMuch more integrated', 'AINextNo change', 'AISearchDevHaveWorkedWith', 'AIThreat', 'BuildvsBuy', 'Check',
+    'EmbeddedHaveWorkedWith', 'Frustration', 'JobSat', 'JobSatPoints_1', 'JobSatPoints_10', 'JobSatPoints_11', 'JobSatPoints_4', 
+    'JobSatPoints_5', 'JobSatPoints_6', 'JobSatPoints_7', 'JobSatPoints_8', 'JobSatPoints_9', 'Knowledge_9',
+    'ProfessionalCloud', 'ProfessionalQuestion', 'SOHow', 'TechDoc', 'TechEndorse'
 }
 
-suffix = "HaveWorkedWith"
-
-def get_clean_df(csv_file):
-    df = pd.read_csv(csv_file)
+def get_df(csv_file):
+    df = pd.read_csv(csv_file, low_memory=False)
 
     cols_to_remove = [col for col in df.columns 
                       if col.endswith('WantToWorkWith') 
-                      or col in bad_cols_set]
+                      or col in bad_cols_set
+                      or col.endswith('Admired')]
 
 
     df = df.drop(cols_to_remove, axis=1)
+
     df = df.dropna(subset=["ConvertedCompYearly", "YearsCodePro"])
 
     df['YearsCodePro'] = df['YearsCodePro'].replace({
@@ -45,14 +56,22 @@ def get_clean_df(csv_file):
 
     df = df.drop(['MainBranch', 'Employment'], axis=1)
     
-    df.columns = [col.removesuffix(suffix) for col in df.columns]
+    df.columns = sorted([rename_col(col) for col in df.columns])
 
-    print(df.columns.to_list())
-    print(len(df))
     return df
 
+def rename_col(col):
+    if col == 'OpSysProfessional use':
+        return 'OpSys'
 
-csv_file_path = '/Users/byar/Downloads/stack-overflow-developer-survey-2022/survey_results_public.csv'
-df = get_clean_df(csv_file_path)
-# output_csv_path = 'cleaned_survey_results_2021.csv' # Choose a meaningful name
-# df.to_csv(output_csv_path, index=False)
+    return col.removesuffix("HaveWorkedWith")
+
+df_21 = get_df('/Users/byar/Downloads/stack-overflow-developer-survey-2021/survey_results_public.csv')
+print(df_21.columns.to_list())
+df_22 = get_df('/Users/byar/Downloads/stack-overflow-developer-survey-2022/survey_results_public.csv')
+print(df_22.columns.to_list())
+df_23 = get_df('/Users/byar/Downloads/stack-overflow-developer-survey-2023/survey_results_public.csv')
+print(df_23.columns.to_list())
+df_24 = get_df('/Users/byar/Downloads/stack-overflow-developer-survey-2024/survey_results_public.csv')
+print(df_24.columns.to_list())
+
